@@ -40,6 +40,7 @@ export default function Make() {
 
       <View style={{ gap: space.md }}>
         <Tile accent icon="sparkle" title="Build a sticker pack" body="Pick any stickers you like. Buy 4, get the 5th free." onPress={() => router.push("/bundle")} />
+        <Tile icon="sparkle" title="Dream up a sticker" body="Describe an idea and see an AI draft in seconds. Free, then we make it print-ready." onPress={() => router.push("/idea")} />
         <Tile icon="image" title="Print your own design" body="Send us your art or photos for stickers, posters or cards. We quote on Instagram." onPress={() => router.push("/custom")} />
       </View>
 

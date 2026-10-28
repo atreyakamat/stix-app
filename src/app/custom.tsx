@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { sendCustomRequest, uploadPhoto } from "@/lib/api";
@@ -20,9 +21,20 @@ type FileState = { key: string; preview: string; id?: string; error?: string };
 export default function Custom() {
   const me = useMe();
   const { catalog } = useShop();
+  // Arriving from an AI idea: its picture is already kept on the shop.
+  const idea = useLocalSearchParams<{ ideaId?: string; ideaPreview?: string; ideaKind?: string; ideaNote?: string }>();
+  const fromIdea = Boolean(idea.ideaId && idea.ideaPreview);
   const handle = catalog?.settings.instagramHandle ?? "stixnvibes";
-  const [files, setFiles] = useState<FileState[]>([]);
-  const [f, setF] = useState({ name: me.details.name, phone: me.details.phone, instagram: me.details.instagram, kind: "sticker" as CustomKind, size: "", qty: "50", note: "" });
+  const [files, setFiles] = useState<FileState[]>(() => (fromIdea ? [{ key: "idea", preview: idea.ideaPreview!, id: idea.ideaId }] : []));
+  const [f, setF] = useState({
+    name: me.details.name,
+    phone: me.details.phone,
+    instagram: me.details.instagram,
+    kind: (idea.ideaKind === "poster" ? "poster" : "sticker") as CustomKind,
+    size: "",
+    qty: fromIdea ? "10" : "50",
+    note: idea.ideaNote?.slice(0, 1500) ?? "",
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<string | null>(null);

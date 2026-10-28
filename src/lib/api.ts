@@ -114,6 +114,17 @@ export async function uploadPhoto(photo: { uri: string; mimeType: string; fileNa
 }
 
 /** Starts an online payment. Gives the gateway link, or null to pay by UPI app instead. */
+export type IdeaKind = "sticker" | "poster";
+export type Idea = { idea: string; kind: IdeaKind; seed: number; url: string };
+
+/** An AI picture link for a customer's idea (Pollinations, via the shop). */
+export const drawIdea = (idea: string, kind: IdeaKind, seed?: number) => call<Idea>("/api/app/idea", postJSON({ idea, kind, seed }));
+
+/** Keeps a drawn idea on the shop as an upload, for a custom request. */
+export async function keepIdea(idea: Idea): Promise<string> {
+  return (await call<{ id: string }>("/api/app/idea/keep", postJSON({ idea: idea.idea, kind: idea.kind, seed: idea.seed }), 30_000)).id;
+}
+
 export async function startPayment(number: string, key: string): Promise<string | null> {
   try {
     const r = await call<{ url?: string; fallback?: boolean }>("/api/pay", postJSON({ number, key }), 8_000);
