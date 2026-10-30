@@ -94,6 +94,7 @@ export default function Custom() {
   return (
     <Screen padTop={false} footer={<>{error ? <Note tone="danger">{error}</Note> : null}<Button title="Send for a quote" busy={busy} onPress={() => void submit()} /></>}>
       <Txt style={{ color: colors.paperDim }}>Your art, your photos, your logo. Send them over and we quote on Instagram. PNG with a clear background prints best.</Txt>
+      {catalog?.settings.bulkNote ? <Note tone="mute">{catalog.settings.bulkNote}</Note> : null}
 
       <View style={{ gap: space.md }}>
         <Txt variant="label">Your designs ({files.length}/{MAX_FILES})</Txt>

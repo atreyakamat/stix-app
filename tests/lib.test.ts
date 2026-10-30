@@ -3,7 +3,7 @@ import type { AppProduct } from "@/lib/api";
 import { parseOrderPath } from "@/lib/api";
 import { forYou, pushRecent, vibeChoices, type Taste } from "@/lib/personal";
 import { offerHints, totals } from "@/lib/pricing";
-import { istToday, searchProducts, upcomingStalls } from "@/lib/shop-helpers";
+import { istToday, searchProducts, stickerPitch, upcomingStalls } from "@/lib/shop-helpers";
 import type { Offer } from "@/lib/types";
 import { reorderLines } from "@/lib/reorder";
 import { ratingSummary, reviewsFor } from "@/lib/reviews";
@@ -145,6 +145,15 @@ describe("order again", () => {
     );
     expect(r.items).toEqual([]);
     expect(r.skipped.map((x) => x.why)).toEqual(["personal", "gone", "options"]);
+  });
+});
+
+describe("admin-driven copy", () => {
+  it("builds the sticker pitch from live prices and the admin offer", () => {
+    const products = [product({ id: "a", type: "sticker", pricePaise: 1500 }), product({ id: "b", type: "sticker", pricePaise: 1200 }), product({ id: "c", type: "poster", pricePaise: 500 })];
+    expect(stickerPitch({ products, offers: [buy4get1] })).toBe("Stickers from ₹12. Buy 4 stickers, get 1 free.");
+    expect(stickerPitch({ products, offers: [] })).toBe("Stickers from ₹12.");
+    expect(stickerPitch({ products: [], offers: [] })).toBe("");
   });
 });
 
