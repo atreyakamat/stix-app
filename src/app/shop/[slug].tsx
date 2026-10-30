@@ -13,6 +13,8 @@ import { pickPhoto } from "@/lib/photos";
 import { canOrder, defaultSelections, isSoldOut, mrpFor, resolveOptions } from "@/lib/pricing";
 import type { CustomField } from "@/lib/types";
 import { useCart } from "@/state/cart";
+import { ProductReviews, RatingLine } from "@/components/reviews";
+import { reviewsFor } from "@/lib/reviews";
 import { useMe } from "@/state/me";
 import { useShop } from "@/state/shop";
 import { Icon } from "@/ui/icon";
@@ -37,6 +39,7 @@ export default function ProductScreen() {
 
 function ProductView({ product }: { product: AppProduct }) {
   const { catalog } = useShop();
+  const reviews = catalog ? reviewsFor(catalog, product.id) : [];
   const { add } = useCart();
   const { taste, toggleWish, viewed, sourceTag } = useMe();
   const { width } = useWindowDimensions();
@@ -204,6 +207,7 @@ function ProductView({ product }: { product: AppProduct }) {
           <Txt variant="display" style={{ fontSize: 32, lineHeight: 34 }}>
             {product.name}
           </Txt>
+          <RatingLine reviews={reviews} />
           <View style={{ flexDirection: "row", alignItems: "center", gap: space.md, flexWrap: "wrap" }}>
             <Text style={s.price}>{product.status === "upcoming" ? "Coming soon" : unit !== null ? formatINR(unit) : "Ask for price"}</Text>
             {mrp !== null && unit !== null ? (
@@ -302,6 +306,8 @@ function ProductView({ product }: { product: AppProduct }) {
             </Txt>
           </View>
         ) : null}
+
+        <ProductReviews productId={product.id} reviews={reviews} />
 
         {related.length ? (
           <View style={{ gap: space.md }}>

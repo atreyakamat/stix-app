@@ -99,6 +99,7 @@ export default function RootLayout() {
                   <Stack.Screen name="bundle" options={{ title: "Build a pack" }} />
                   <Stack.Screen name="custom" options={{ title: "Your own design" }} />
                   <Stack.Screen name="idea" options={{ title: "Dream up a sticker" }} />
+                  <Stack.Screen name="review" options={{ title: "Write a review" }} />
                   <Stack.Screen name="blog/index" options={{ title: "Blog" }} />
                   <Stack.Screen name="blog/[slug]" options={{ title: "" }} />
                   <Stack.Screen name="gallery" options={{ title: "Library" }} />

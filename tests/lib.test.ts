@@ -5,6 +5,7 @@ import { forYou, pushRecent, vibeChoices, type Taste } from "@/lib/personal";
 import { offerHints, totals } from "@/lib/pricing";
 import { istToday, searchProducts, stickerPitch, upcomingStalls } from "@/lib/shop-helpers";
 import type { Offer } from "@/lib/types";
+import { ratingSummary, reviewsFor } from "@/lib/reviews";
 import { parseUpiResponse, withTxnRef } from "@/lib/upi";
 
 const product = (over: Partial<AppProduct>): AppProduct => ({
@@ -117,5 +118,16 @@ describe("admin-driven copy", () => {
     expect(stickerPitch({ products, offers: [buy4get1] })).toBe("Stickers from ₹12. Buy 4 stickers, get 1 free.");
     expect(stickerPitch({ products, offers: [] })).toBe("Stickers from ₹12.");
     expect(stickerPitch({ products: [], offers: [] })).toBe("");
+  });
+});
+
+describe("reviews", () => {
+  const r = (productId: string, rating: number, createdAt: string) => ({ id: `${productId}${rating}${createdAt}`, productId, name: "A", rating, text: "", photos: [], verified: false, reply: "", repliedAt: null, createdAt });
+  it("lists a product's reviews newest first and averages them", () => {
+    const catalog = { reviews: [r("a", 5, "2026-10-01"), r("b", 1, "2026-10-02"), r("a", 4, "2026-10-03")] };
+    expect(reviewsFor(catalog, "a").map((x) => x.rating)).toEqual([4, 5]);
+    expect(ratingSummary(reviewsFor(catalog, "a"))).toEqual({ average: 4.5, count: 2 });
+    expect(ratingSummary([])).toBeNull();
+    expect(reviewsFor({}, "a")).toEqual([]);
   });
 });
