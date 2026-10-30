@@ -5,6 +5,7 @@ import { forYou, pushRecent, vibeChoices, type Taste } from "@/lib/personal";
 import { offerHints, totals } from "@/lib/pricing";
 import { istToday, searchProducts, stickerPitch, upcomingStalls } from "@/lib/shop-helpers";
 import type { Offer } from "@/lib/types";
+import { reorderLines } from "@/lib/reorder";
 import { ratingSummary, reviewsFor } from "@/lib/reviews";
 import { parseUpiResponse, withTxnRef } from "@/lib/upi";
 
@@ -109,6 +110,41 @@ describe("shop helpers", () => {
     ];
     expect(upcomingStalls({ stalls }, null, now).map((s) => s.id)).toEqual(["3", "1"]);
     expect(upcomingStalls({ stalls }, "x", now).map((s) => s.id)).toEqual(["3"]);
+  });
+});
+
+describe("order again", () => {
+  const line = (over: object) => ({ productId: "a", slug: "a", name: "A", type: "poster" as const, image: null, options: [] as string[], custom: [] as { label: string; value: string; kind: "text" }[], unitPricePaise: 100, qty: 2, lineTotalPaise: 200, ...over });
+  const poster = product({
+    id: "a",
+    slug: "a",
+    type: "poster",
+    pricePaise: 6000,
+    minQty: 1,
+    options: [{ id: "size", name: "Size", values: [{ id: "a4", label: "A4", priceDeltaPaise: 0 }, { id: "a3", label: "A3", priceDeltaPaise: 4000 }] }],
+  });
+
+  it("matches option labels back to today's options and prices", () => {
+    const r = reorderLines({ lines: [line({ options: ["Size: A3"] })] }, [poster]);
+    expect(r.skipped).toEqual([]);
+    expect(r.items[0]!.qty).toBe(2);
+    expect(r.items[0]!.item.selections).toEqual({ size: "a3" });
+    expect(r.items[0]!.item.unitPricePaise).toBe(10000);
+  });
+
+  it("skips personalised, gone and changed lines", () => {
+    const r = reorderLines(
+      {
+        lines: [
+          line({ custom: [{ label: "Name", value: "Ria", kind: "text" }] }),
+          line({ productId: "zz", name: "Old" }),
+          line({ options: ["Size: A2"] }),
+        ],
+      },
+      [poster],
+    );
+    expect(r.items).toEqual([]);
+    expect(r.skipped.map((x) => x.why)).toEqual(["personal", "gone", "options"]);
   });
 });
 

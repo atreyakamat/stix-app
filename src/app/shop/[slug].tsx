@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { FlatList, Pressable, Share, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { PersonalPreview } from "@/components/personal-preview";
 import { ProductRail } from "@/components/product-card";
-import { shopLink, track, uploadPhoto, type AppProduct } from "@/lib/api";
+import { shareLink, shopLink, track, uploadPhoto, type AppProduct } from "@/lib/api";
 import { copyAndDm } from "@/lib/dm";
 import { askMessage } from "@/lib/instagram";
 import { formatINR } from "@/lib/money";
@@ -168,7 +168,7 @@ function ProductView({ product }: { product: AppProduct }) {
           title: "",
           headerRight: () => (
             <View style={{ flexDirection: "row", gap: 18 }}>
-              <Pressable hitSlop={10} onPress={() => void Share.share({ message: `${product.name} on Stix N Vibes ${url}` })} accessibilityLabel="Share">
+              <Pressable hitSlop={10} onPress={() => void Share.share({ message: `${product.name} on Stix N Vibes ${shareLink(`/shop/${product.slug}`)}` })} accessibilityLabel="Share">
                 <Icon name="share" size={21} />
               </Pressable>
               <Pressable hitSlop={10} onPress={() => (tap(), toggleWish(product.id))} accessibilityLabel={wished ? "Remove from wishlist" : "Save to wishlist"}>
