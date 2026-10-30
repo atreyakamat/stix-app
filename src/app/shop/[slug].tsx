@@ -293,6 +293,7 @@ function ProductView({ product }: { product: AppProduct }) {
         ) : null}
 
         {product.description ? <Txt style={{ color: colors.paperDim }}>{product.description}</Txt> : null}
+        {settings.deliveryNote ? <Note tone="mute">{settings.deliveryNote}</Note> : null}
         {product.details ? (
           <View style={{ gap: 6 }}>
             <Txt variant="label">Details</Txt>

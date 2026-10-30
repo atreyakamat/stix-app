@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ProductGrid } from "@/components/product-card";
 import { canOrder } from "@/lib/pricing";
-import { isPersonalised } from "@/lib/shop-helpers";
+import { isPersonalised, stickerPackOffer } from "@/lib/shop-helpers";
 import { useShop } from "@/state/shop";
 import { Icon, type IconName } from "@/ui/icon";
 import { Loading, Screen, Txt } from "@/ui/kit";
@@ -27,6 +27,7 @@ export default function Make() {
   const { catalog } = useShop();
   if (!catalog) return <Loading />;
   const personal = catalog.products.filter((p) => isPersonalised(p) && canOrder(p));
+  const pack = stickerPackOffer(catalog);
 
   return (
     <Screen>
@@ -39,9 +40,9 @@ export default function Make() {
       </View>
 
       <View style={{ gap: space.md }}>
-        <Tile accent icon="sparkle" title="Build a sticker pack" body="Pick any stickers you like. Buy 4, get the 5th free." onPress={() => router.push("/bundle")} />
+        <Tile accent icon="sparkle" title="Build a sticker pack" body={pack ? `Pick any stickers you like. ${pack.name.replace(/\.$/, "")}.` : "Pick any stickers you like, as many as you want."} onPress={() => router.push("/bundle")} />
         <Tile icon="sparkle" title="Dream up a sticker" body="Describe an idea and see an AI draft in seconds. Free, then we make it print-ready." onPress={() => router.push("/idea")} />
-        <Tile icon="image" title="Print your own design" body="Send us your art or photos for stickers, posters or cards. We quote on Instagram." onPress={() => router.push("/custom")} />
+        <Tile icon="image" title="Print your own design" body={catalog.settings.bulkNote || "Send us your art or photos for stickers, posters or cards. We quote on Instagram."} onPress={() => router.push("/custom")} />
       </View>
 
       {personal.length ? (

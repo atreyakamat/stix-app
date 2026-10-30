@@ -1,5 +1,7 @@
 import type { AppProduct, Catalog } from "./api";
-import type { Collection } from "./types";
+import { formatINR } from "./money";
+import { canOrder, fromPrice } from "./pricing";
+import type { Collection, Offer } from "./types";
 
 /** Collection cover: its own image, or the first product photo in it. */
 export function collectionCover(c: Collection, products: AppProduct[]): string | null {
@@ -28,4 +30,16 @@ export function searchProducts(products: AppProduct[], query: string): AppProduc
     const hay = `${p.name} ${p.type} ${p.tags.join(" ")} ${p.description}`.toLowerCase();
     return words.every((w) => hay.includes(w));
   });
+}
+
+/** The running buy-X-get-Y sticker offer set in admin, if any. */
+export function stickerPackOffer(catalog: Pick<Catalog, "offers">): Offer | null {
+  return catalog.offers.filter((o) => o.kind === "bxgy" && (o.productType === "sticker" || o.productType === null)).sort((a, b) => a.sortOrder - b.sortOrder)[0] ?? null;
+}
+
+/** "Stickers from ₹10. Buy 4, get 1 free." from live prices and offers, never hardcoded. */
+export function stickerPitch(catalog: Pick<Catalog, "products" | "offers">): string {
+  const prices = catalog.products.filter((p) => p.type === "sticker" && canOrder(p)).map(fromPrice).filter((n): n is number => n !== null);
+  const offer = stickerPackOffer(catalog);
+  return [prices.length ? `Stickers from ${formatINR(Math.min(...prices))}.` : "", offer ? `${offer.name.replace(/\.$/, "")}.` : ""].filter(Boolean).join(" ");
 }

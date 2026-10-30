@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-na
 import { track, type AppProduct } from "@/lib/api";
 import { formatINR } from "@/lib/money";
 import { defaultSelections, isSoldOut, resolveOptions } from "@/lib/pricing";
+import { stickerPackOffer } from "@/lib/shop-helpers";
 import { useCart } from "@/state/cart";
 import { useMe } from "@/state/me";
 import { useShop } from "@/state/shop";
@@ -18,7 +19,7 @@ export default function Bundle() {
   const { catalog } = useShop();
   if (!catalog) return <Loading />;
   const stickers = catalog.products.filter((p) => p.type === "sticker" && p.status === "live" && p.pricePaise !== null && p.customFields.every((f) => !f.required));
-  const offer = catalog.offers.filter((o) => o.kind === "bxgy" && (o.productType === "sticker" || o.productType === null)).sort((a, b) => a.sortOrder - b.sortOrder)[0];
+  const offer = stickerPackOffer(catalog);
   const deal = offer ? { buy: offer.buy, free: offer.free, name: offer.name } : null;
   if (!stickers.some((p) => !isSoldOut(p)))
     return (

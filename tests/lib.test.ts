@@ -3,7 +3,7 @@ import type { AppProduct } from "@/lib/api";
 import { parseOrderPath } from "@/lib/api";
 import { forYou, pushRecent, vibeChoices, type Taste } from "@/lib/personal";
 import { offerHints, totals } from "@/lib/pricing";
-import { istToday, searchProducts, upcomingStalls } from "@/lib/shop-helpers";
+import { istToday, searchProducts, stickerPitch, upcomingStalls } from "@/lib/shop-helpers";
 import type { Offer } from "@/lib/types";
 import { parseUpiResponse, withTxnRef } from "@/lib/upi";
 
@@ -108,5 +108,14 @@ describe("shop helpers", () => {
     ];
     expect(upcomingStalls({ stalls }, null, now).map((s) => s.id)).toEqual(["3", "1"]);
     expect(upcomingStalls({ stalls }, "x", now).map((s) => s.id)).toEqual(["3"]);
+  });
+});
+
+describe("admin-driven copy", () => {
+  it("builds the sticker pitch from live prices and the admin offer", () => {
+    const products = [product({ id: "a", type: "sticker", pricePaise: 1500 }), product({ id: "b", type: "sticker", pricePaise: 1200 }), product({ id: "c", type: "poster", pricePaise: 500 })];
+    expect(stickerPitch({ products, offers: [buy4get1] })).toBe("Stickers from ₹12. Buy 4 stickers, get 1 free.");
+    expect(stickerPitch({ products, offers: [] })).toBe("Stickers from ₹12.");
+    expect(stickerPitch({ products: [], offers: [] })).toBe("");
   });
 });

@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { CartLine, CouponField, Nudges, Totals } from "@/components/cart-bits";
 import { copyAndDm } from "@/lib/dm";
 import { orderMessage } from "@/lib/instagram";
+import { stickerPitch } from "@/lib/shop-helpers";
 import { useCart } from "@/state/cart";
 import { useShop } from "@/state/shop";
 import { Button, Empty, Note, Screen, Txt } from "@/ui/kit";
@@ -19,7 +20,7 @@ export default function Cart() {
         <Txt variant="display" style={{ fontSize: 34 }}>
           Cart
         </Txt>
-        <Empty icon="bag" title="Your cart is empty" body="Stickers from ₹10. Buy 4, get the 5th free." action="Start shopping" onAction={() => router.push("/shop")} />
+        <Empty icon="bag" title="Your cart is empty" body={(catalog && stickerPitch(catalog)) || "Find something you like in the shop."} action="Start shopping" onAction={() => router.push("/shop")} />
       </Screen>
     );
 
@@ -71,6 +72,7 @@ export default function Cart() {
         <Totals />
         <CouponField />
         {settings?.orderNote ? <Txt variant="small" style={{ color: colors.paperDim }}>{settings.orderNote}</Txt> : null}
+        {settings?.bulkNote ? <Txt variant="small" style={{ color: colors.paperDim }}>{settings.bulkNote}</Txt> : null}
       </View>
     </Screen>
   );
