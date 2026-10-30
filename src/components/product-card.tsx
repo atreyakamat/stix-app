@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } fr
 import type { AppProduct } from "@/lib/api";
 import { formatINR } from "@/lib/money";
 import { canOrder, fromPrice, hasPriceRange, isSoldOut, mrpFor } from "@/lib/pricing";
+import { ratingSummary, reviewsFor } from "@/lib/reviews";
 import { useMe } from "@/state/me";
 import { useShop } from "@/state/shop";
 import { Icon } from "@/ui/icon";
@@ -27,6 +28,7 @@ export function ProductCard({ product, width }: { product: AppProduct; width: nu
   const orderable = canOrder(product);
   const price = fromPrice(product);
   const mrp = orderable && !hasPriceRange(product) ? mrpFor(price, product.compareAtPaise, catalog?.settings.mrpMarkupPercent ?? null) : null;
+  const rating = catalog ? ratingSummary(reviewsFor(catalog, product.id)) : null;
   const badge = isSoldOut(product) ? "Sold out" : product.status === "upcoming" ? "Soon" : product.badge;
 
   return (
@@ -57,6 +59,11 @@ export function ProductCard({ product, width }: { product: AppProduct; width: nu
       <View style={{ flexDirection: "row", gap: 6, alignItems: "baseline" }}>
         {mrp !== null ? <Text style={s.mrp}>{formatINR(mrp)}</Text> : null}
         <Text style={[s.price, !orderable && { color: colors.mute }]}>{priceLabel(product)}</Text>
+        {rating ? (
+          <Text style={s.rating}>
+            ★ {rating.average.toFixed(1)} ({rating.count})
+          </Text>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -106,4 +113,5 @@ const s = StyleSheet.create({
   name: { marginTop: 8, fontFamily: fonts.medium, fontSize: 14.5, lineHeight: 19, color: colors.paper },
   mrp: { fontFamily: fonts.body, fontSize: 13, color: colors.mute, textDecorationLine: "line-through" },
   price: { fontFamily: fonts.semibold, fontSize: 14.5, color: colors.lemon, fontVariant: ["tabular-nums"] },
+  rating: { fontFamily: fonts.medium, fontSize: 12, color: colors.paperDim, marginLeft: "auto" },
 });
