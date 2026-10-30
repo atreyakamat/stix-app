@@ -159,3 +159,6 @@ export async function track(events: { type: EventType; productId?: string | null
 }
 
 export const shopLink = (path: string) => `${SHOP_URL}${path}`;
+
+/** A shop link for sharing, tagged so admin analytics counts visits from app shares. */
+export const shareLink = (path: string) => `${SHOP_URL}${path}${path.includes("?") ? "&" : "?"}src=app-share`;

@@ -1,8 +1,8 @@
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { ApiError, drawIdea, keepIdea, type Idea, type IdeaKind } from "@/lib/api";
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ApiError, drawIdea, keepIdea, shareLink, type Idea, type IdeaKind } from "@/lib/api";
 import { copyAndDm } from "@/lib/dm";
 import { useShop } from "@/state/shop";
 import { Button, Chip, Field, Note, Screen, Txt } from "@/ui/kit";
@@ -120,7 +120,10 @@ export default function IdeaScreen() {
           ) : (
             <View style={{ gap: space.sm }}>
               <Button title="Get this made" busy={keeping} disabled={shot.state !== "ready"} onPress={() => void makeIt()} />
-              <Button kind="ghost" title="Try another version" icon="refresh" busy={busy} disabled={shot.state === "loading"} onPress={() => void draw(true)} />
+              <View style={{ flexDirection: "row", gap: space.sm }}>
+                <Button kind="ghost" title="Another version" icon="refresh" busy={busy} disabled={shot.state === "loading"} style={{ flex: 1 }} onPress={() => void draw(true)} />
+                <Button kind="ghost" title="Share" icon="share" disabled={shot.state !== "ready"} style={{ flex: 1 }} onPress={() => void Share.share({ message: `I dreamed up a sticker: "${shot.idea}" ${shot.url}\nMake yours with Stix N Vibes ${shareLink("/")}` })} />
+              </View>
             </View>
           )}
 

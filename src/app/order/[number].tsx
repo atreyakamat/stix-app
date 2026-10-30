@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Linking, Pressable, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, AppState, Linking, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Qr } from "@/components/qr";
 import { ApiError, getOrder, startPayment, type AppOrder } from "@/lib/api";
@@ -13,8 +13,10 @@ import { addressText, dmLink, orderMessage } from "@/lib/instagram";
 import { formatINR } from "@/lib/money";
 import { openUpi } from "@/lib/pay";
 import { formatPhone } from "@/lib/phone";
+import { reorderLines } from "@/lib/reorder";
 import type { OrderStatus } from "@/lib/types";
 import { UPI_APPS, withTxnRef, type UpiOutcome } from "@/lib/upi";
+import { useCart } from "@/state/cart";
 import { useMe } from "@/state/me";
 import { useShop } from "@/state/shop";
 import { Icon } from "@/ui/icon";
@@ -139,9 +141,24 @@ function Steps({ order }: { order: AppOrder }) {
 
 function OrderView({ order, viewKey, fresh, checking, onPaid, onRefresh }: { order: AppOrder; viewKey: string; fresh: boolean; checking: "idle" | "checking" | "gave-up"; onPaid: () => void; onRefresh: () => void }) {
   const { catalog } = useShop();
+  const { add } = useCart();
   const handle = catalog?.settings.instagramHandle ?? "stixnvibes";
   const freeAbove = catalog?.settings.freeShippingAbovePaise ?? null;
   const message = orderMessage({ ...order, freeShippingAbovePaise: freeAbove, link: order.orderUrl });
+
+  // Puts the same things back in the cart at today's prices.
+  function orderAgain() {
+    if (!catalog) return;
+    tap();
+    const r = reorderLines(order, catalog.products);
+    for (const x of r.items) add(x.item, x.qty);
+    const note = r.skipped.length
+      ? r.skipped.map((x) => `${x.name}: ${x.why === "personal" ? "personalised, add it again from its page" : x.why === "gone" ? "no longer available" : "options changed, pick them again"}`).join("\n")
+      : "";
+    if (!r.items.length) return Alert.alert("Nothing to add", note || "These items aren't available right now.");
+    router.push("/cart");
+    if (note) Alert.alert("Added to your cart", `Prices are today's.\n\nNot added:\n${note}`);
+  }
 
   return (
     <Screen padTop={false} onRefresh={onRefresh}>
@@ -236,6 +253,7 @@ function OrderView({ order, viewKey, fresh, checking, onPaid, onRefresh }: { ord
         <Icon name="instagram" size={17} color={colors.lemon} />
         <Text style={{ color: colors.lemon, fontFamily: fonts.medium }}>Questions? Message us with {order.number}</Text>
       </Pressable>
+      {catalog && order.status !== "new" ? <Button kind="ghost" icon="refresh" title="Order again" onPress={() => orderAgain()} /> : null}
       <Button kind="quiet" title="Keep shopping" onPress={() => router.navigate("/")} />
     </Screen>
   );
