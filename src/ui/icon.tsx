@@ -30,7 +30,8 @@ export type IconName =
   | "refresh"
   | "wifi-off"
   | "trash"
-  | "box";
+  | "box"
+  | "star";
 
 export function Icon({ name, size = 22, color = colors.paper, filled = false, strokeWidth = 2 }: { name: IconName; size?: number; color?: string; filled?: boolean; strokeWidth?: number }) {
   const p = { stroke: color, strokeWidth, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, fill: "none" };
@@ -69,6 +70,7 @@ export function Icon({ name, size = 22, color = colors.paper, filled = false, st
           <Path {...p} d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
         </>
       )}
+      {name === "star" && <Path {...p} fill={filled ? color : "none"} d="M12 2.8l2.8 5.7 6.3.9-4.6 4.4 1.1 6.2L12 17.1 6.4 20l1.1-6.2L2.9 9.4l6.3-.9z" />}
       {name === "heart" && (
         <Path {...p} fill={filled ? color : "none"} d="M12 20s-7-4.4-9.2-9A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5c-2.2 4.6-9.2 9-9.2 9z" />
       )}

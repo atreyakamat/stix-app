@@ -14,6 +14,7 @@ import { formatINR } from "@/lib/money";
 import { openUpi } from "@/lib/pay";
 import { formatPhone } from "@/lib/phone";
 import { reorderLines } from "@/lib/reorder";
+import { REVIEWABLE } from "@/lib/reviews";
 import type { OrderStatus } from "@/lib/types";
 import { UPI_APPS, withTxnRef, type UpiOutcome } from "@/lib/upi";
 import { useCart } from "@/state/cart";
@@ -211,6 +212,17 @@ function OrderView({ order, viewKey, fresh, checking, onPaid, onRefresh }: { ord
                   </Txt>
                 ))}
               {l.custom.some((c) => c.kind === "image") ? <Txt variant="small">Your photo is with us.</Txt> : null}
+              {(REVIEWABLE as readonly string[]).includes(order.status) && l.productId ? (
+                <Pressable
+                  hitSlop={6}
+                  onPress={() => router.push({ pathname: "/review", params: { productId: l.productId, orderNumber: order.number, k: viewKey } })}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}
+                  accessibilityRole="button"
+                >
+                  <Icon name="star" size={14} color={colors.lemon} />
+                  <Text style={{ color: colors.lemon, fontFamily: fonts.medium, fontSize: 13.5 }}>Review this</Text>
+                </Pressable>
+              ) : null}
             </View>
           </View>
         ))}

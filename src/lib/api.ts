@@ -25,6 +25,37 @@ export type Catalog = {
   stalls: PublicStall[];
   posts: BlogPost[];
   gallery: GalleryItem[];
+  /** Published reviews with the shop's replies. Missing on shops older than reviews. */
+  reviews?: PublicReview[];
+};
+
+/** A published customer review as the shop sends it. Photos are full URLs. */
+export type PublicReview = {
+  id: string;
+  productId: string;
+  name: string;
+  rating: number;
+  text: string;
+  photos: string[];
+  /** Bought through an online order. */
+  verified: boolean;
+  reply: string;
+  repliedAt: string | null;
+  createdAt: string;
+};
+
+export type NewReview = {
+  productId: string;
+  rating: number;
+  text: string;
+  name: string;
+  instagram: string;
+  /** Upload ids from uploadPhoto. */
+  photos: string[];
+  /** Ties the review to an order (shown as a verified buyer). */
+  orderNumber?: string;
+  key?: string;
+  source: string;
 };
 
 export type PayInfo = {
@@ -124,6 +155,9 @@ export const drawIdea = (idea: string, kind: IdeaKind, seed?: number) => call<Id
 export async function keepIdea(idea: Idea): Promise<string> {
   return (await call<{ id: string }>("/api/app/idea/keep", postJSON({ idea: idea.idea, kind: idea.kind, seed: idea.seed }), 30_000)).id;
 }
+
+/** Sends a review for the shop to check. It shows once approved. */
+export const submitReview = (r: NewReview) => call<{ id: string }>("/api/reviews", postJSON(r));
 
 export async function startPayment(number: string, key: string): Promise<string | null> {
   try {

@@ -6,6 +6,7 @@ import { offerHints, totals } from "@/lib/pricing";
 import { istToday, searchProducts, upcomingStalls } from "@/lib/shop-helpers";
 import type { Offer } from "@/lib/types";
 import { reorderLines } from "@/lib/reorder";
+import { ratingSummary, reviewsFor } from "@/lib/reviews";
 import { parseUpiResponse, withTxnRef } from "@/lib/upi";
 
 const product = (over: Partial<AppProduct>): AppProduct => ({
@@ -144,5 +145,16 @@ describe("order again", () => {
     );
     expect(r.items).toEqual([]);
     expect(r.skipped.map((x) => x.why)).toEqual(["personal", "gone", "options"]);
+  });
+});
+
+describe("reviews", () => {
+  const r = (productId: string, rating: number, createdAt: string) => ({ id: `${productId}${rating}${createdAt}`, productId, name: "A", rating, text: "", photos: [], verified: false, reply: "", repliedAt: null, createdAt });
+  it("lists a product's reviews newest first and averages them", () => {
+    const catalog = { reviews: [r("a", 5, "2026-10-01"), r("b", 1, "2026-10-02"), r("a", 4, "2026-10-03")] };
+    expect(reviewsFor(catalog, "a").map((x) => x.rating)).toEqual([4, 5]);
+    expect(ratingSummary(reviewsFor(catalog, "a"))).toEqual({ average: 4.5, count: 2 });
+    expect(ratingSummary([])).toBeNull();
+    expect(reviewsFor({}, "a")).toEqual([]);
   });
 });
