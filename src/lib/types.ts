@@ -227,6 +227,36 @@ export type CustomRequest = {
 export const EVENT_TYPES = ["view", "add_to_cart", "order_click", "ask_click", "visit", "checkout"] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
+// Reviews ----------------------------------------------------------------------
+
+/** pending = waiting for admin; only published ones show on the shop. */
+export const REVIEW_STATUSES = ["pending", "published", "hidden"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+export const REVIEW_TEXT_MAX = 1000;
+export const REVIEW_PHOTOS_MAX = 3;
+
+export type Review = {
+  id: string;
+  productId: string;
+  /** Set only when the buyer proved the order (number + key): "verified buyer". */
+  orderNumber: string | null;
+  /** Shown publicly. */
+  name: string;
+  /** Without the @, or "". */
+  instagram: string;
+  /** 1 to 5. */
+  rating: number;
+  text: string;
+  /** Upload ids, opened at /u/<id>. */
+  photos: string[];
+  status: ReviewStatus;
+  /** The shop's public reply, "" for none. */
+  reply: string;
+  repliedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Upload = { id: string; path: string; contentType: string };
 
 export type Settings = {
@@ -378,4 +408,28 @@ export type Stats = {
   bySource: { source: string; visits: number | null; orders: number | null; sales: number | null; salesPaise: number | null }[];
   byCoupon: { code: string; orders: number; sales: number; salesPaise: number; discountPaise: number }[];
   daily: { day: string; views: number; visits: number; orders: number; salesPaise: number }[];
+};
+
+// Customer accounts -----------------------------------------------------
+// Optional: sign in with an emailed code to keep details, wishlist and
+// orders across phones and the website. No passwords.
+
+export const ACCOUNT_ORDERS_MAX = 200;
+export const ACCOUNT_LIST_MAX = 100;
+
+/** An order this account placed or claimed; the key is the order page's private key. */
+export type AccountOrderRef = { number: string; key: string };
+
+export type AccountData = {
+  details: { name: string; phone: string; instagram: string; fulfilment: Fulfilment; address: Address };
+  taste: { collegeId: string | null; vibes: string[]; wishlist: string[]; recent: string[] };
+  orders: AccountOrderRef[];
+};
+
+export type Account = { email: string; name: string; data: AccountData; createdAt: string; updatedAt: string };
+
+export const EMPTY_ACCOUNT_DATA: AccountData = {
+  details: { name: "", phone: "", instagram: "", fulfilment: "delivery", address: { line: "", city: "", state: "Goa", pincode: "" } },
+  taste: { collegeId: null, vibes: [], wishlist: [], recent: [] },
+  orders: [],
 };

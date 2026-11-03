@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AccountSync } from "@/components/account-sync";
 import { track } from "@/lib/api";
 import { CartProvider } from "@/state/cart";
 import { MeProvider, useMe } from "@/state/me";
@@ -76,6 +77,7 @@ export default function RootLayout() {
             <ShopProvider>
               <CartProvider>
                 <LinkCapture />
+                <AccountSync />
                 <StatusBar style="light" />
                 <Stack
                   screenOptions={{
@@ -105,6 +107,7 @@ export default function RootLayout() {
                   <Stack.Screen name="gallery" options={{ title: "Library" }} />
                   <Stack.Screen name="wishlist" options={{ title: "Wishlist" }} />
                   <Stack.Screen name="details" options={{ title: "Your details" }} />
+                  <Stack.Screen name="signin" options={{ title: "", animation: "slide_from_bottom", presentation: "modal" }} />
                   <Stack.Screen name="taste" options={{ title: "Your college & vibes" }} />
                 </Stack>
               </CartProvider>

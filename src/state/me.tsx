@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { mergeAccount, type AccountSession } from "@/lib/account-sync";
 import { APP_SOURCE } from "@/lib/config";
 import { pushRecent, type Taste } from "@/lib/personal";
 import { readJSON, writeJSON } from "@/lib/storage";
-import type { Address, Fulfilment } from "@/lib/types";
+import type { Account, Address, Fulfilment } from "@/lib/types";
 
-// Everything the app remembers about the customer. It stays on this phone:
-// there are no accounts, and nothing here is sent anywhere until they place
-// an order.
+// Everything the app remembers about the customer. By default it stays on
+// this phone and nothing is sent anywhere until they place an order. If they
+// sign in (optional), details, vibes, wishlist and order links are also kept
+// on their account; see AccountSync.
 
 export type Details = { name: string; phone: string; instagram: string; fulfilment: Fulfilment; address: Address };
 
@@ -32,6 +34,8 @@ type MeState = {
   /** From a stall QR or Instagram link: ?src= and ?code=. */
   source: { s: string; at: number } | null;
   pendingCode: string;
+  /** Set while signed in to an account. */
+  account: AccountSession | null;
 };
 
 const KEY = "snv-me-v1";
@@ -44,6 +48,7 @@ const INITIAL: MeState = {
   orders: [],
   source: null,
   pendingCode: "",
+  account: null,
 };
 
 type MeValue = MeState & {
@@ -60,6 +65,11 @@ type MeValue = MeState & {
   forgetOrder: (number: string) => void;
   setLinkSource: (src: string) => void;
   setPendingCode: (code: string) => void;
+  /** Signs in: keeps the session and merges what the account already has. */
+  signIn: (session: AccountSession, account: Account) => void;
+  /** Brings in changes made on another device. */
+  mergeFromAccount: (account: Account) => void;
+  signOut: () => void;
   /** Clears everything the app remembers. */
   reset: () => void;
 };
@@ -112,6 +122,10 @@ export function MeProvider({ children }: { children: ReactNode }) {
       forgetOrder: (number: string) => patch((s) => ({ ...s, orders: s.orders.filter((o) => o.number !== number) })),
       setLinkSource: (src: string) => patch((s) => ({ ...s, source: { s: src, at: Date.now() } })),
       setPendingCode: (code: string) => patch((s) => (s.pendingCode === code ? s : { ...s, pendingCode: code })),
+      signIn: (session: AccountSession, account: Account) =>
+        patch((s) => ({ ...s, ...mergeAccount(s, account), account: session })),
+      mergeFromAccount: (account: Account) => patch((s) => ({ ...s, ...mergeAccount(s, account) })),
+      signOut: () => patch((s) => ({ ...s, account: null })),
       reset: () => patch(() => ({ ...INITIAL, onboarded: true })),
     };
   }, []);
