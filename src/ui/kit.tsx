@@ -16,6 +16,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, type IconName } from "./icon";
 import { colors, fonts, radius, space } from "./theme";
@@ -41,6 +42,23 @@ export function Txt({ variant = "body", style, ...rest }: TextProps & { variant?
 
 export const tap = () => void Haptics.selectionAsync().catch(() => {});
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+/** A springy press: shrinks a touch under the finger and bounces back. */
+function useSpringPress(to = 0.96) {
+  const scale = useSharedValue(1);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return {
+    style,
+    onPressIn: () => {
+      scale.value = withSpring(to, { damping: 18, stiffness: 420 });
+    },
+    onPressOut: () => {
+      scale.value = withSpring(1, { damping: 11, stiffness: 260 });
+    },
+  };
+}
+
 type ButtonProps = Omit<PressableProps, "style" | "children"> & {
   title: string;
   kind?: "primary" | "ghost" | "quiet" | "danger";
@@ -50,10 +68,11 @@ type ButtonProps = Omit<PressableProps, "style" | "children"> & {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ title, kind = "primary", icon, busy, small, disabled, style, onPress, ...rest }: ButtonProps) {
+export function Button({ title, kind = "primary", icon, busy, small, disabled, style, onPress, onPressIn, onPressOut, ...rest }: ButtonProps) {
   const fg = kind === "primary" ? colors.ink : kind === "danger" ? colors.danger : colors.paper;
+  const press = useSpringPress();
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityState={{ disabled: !!(disabled || busy), busy: !!busy }}
       disabled={disabled || busy}
@@ -61,7 +80,15 @@ export function Button({ title, kind = "primary", icon, busy, small, disabled, s
         tap();
         onPress?.(e);
       }}
-      style={({ pressed }) => [
+      onPressIn={(e) => {
+        press.onPressIn();
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        press.onPressOut();
+        onPressOut?.(e);
+      }}
+      style={[
         btn.base,
         small && btn.small,
         kind === "primary" && btn.primary,
@@ -69,14 +96,14 @@ export function Button({ title, kind = "primary", icon, busy, small, disabled, s
         kind === "danger" && btn.ghost,
         kind === "quiet" && btn.quiet,
         (disabled || busy) && { opacity: 0.45 },
-        pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 },
         style,
+        press.style,
       ]}
       {...rest}
     >
       {busy ? <ActivityIndicator color={fg} /> : icon ? <Icon name={icon} size={small ? 16 : 19} color={fg} /> : null}
       <Text style={[btn.text, small && { fontSize: 14 }, { color: fg }]}>{title}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -90,18 +117,21 @@ const btn = StyleSheet.create({
 });
 
 export function Chip({ label, on, onPress }: { label: string; on?: boolean; onPress?: () => void }) {
+  const press = useSpringPress(0.94);
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!on }}
       onPress={() => {
         tap();
         onPress?.();
       }}
-      style={[chip.base, on && chip.on]}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
+      style={[chip.base, on && chip.on, press.style]}
     >
       <Text style={[chip.text, on && { color: colors.ink }]}>{label}</Text>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

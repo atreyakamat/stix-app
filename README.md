@@ -22,9 +22,14 @@ library are all managed in the shop admin as before.
   - Personalised products: text, links and photos (camera or gallery) with
     a live preview card.
   - Build a sticker pack, and "print your own design" requests.
-  - A personal shop on the phone, no login: college + vibes picked on first
-    open drive "Picked for you", wishlist, recently viewed, My orders with
-    live status, saved checkout details.
+  - A personal shop on the phone, no login needed: college + vibes picked on
+    first open drive "Picked for you", wishlist, recently viewed, My orders
+    with live status, saved checkout details.
+  - **Optional account** (You tab): sign in with an emailed 6-digit code, no
+    password. Details, vibes, wishlist and order links then follow the
+    customer to any phone and the website (`src/components/account-sync.tsx`,
+    merge rules in `src/lib/account-sync.ts`). Hidden until the shop can send
+    the codes (`accounts` in the catalogue). Guest ordering is unchanged.
 - **Works at stalls with no signal**: the last catalogue is kept on the phone.
 - **Links open in the app**: stall QR links (`?src=…&code=…`) credit the
   stall and apply the code; `shop.stixnvibes.com/shop/…`, `/order/…`, `/c/…`
