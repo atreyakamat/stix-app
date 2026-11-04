@@ -195,6 +195,10 @@ export type Coupon = {
   endsAt: string | null;
   /** Where it's handed out, e.g. "WordsUp stall". */
   source: string;
+  /** Only works when the order is placed from the Stix app. */
+  appOnly: boolean;
+  /** Free stickers added to the order (we pick the designs when packing). 0 = none. */
+  freeStickers: number;
   active: boolean;
   createdAt: string;
 };
@@ -226,6 +230,36 @@ export type CustomRequest = {
 
 export const EVENT_TYPES = ["view", "add_to_cart", "order_click", "ask_click", "visit", "checkout"] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
+
+// Reviews ----------------------------------------------------------------------
+
+/** pending = waiting for admin; only published ones show on the shop. */
+export const REVIEW_STATUSES = ["pending", "published", "hidden"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+export const REVIEW_TEXT_MAX = 1000;
+export const REVIEW_PHOTOS_MAX = 3;
+
+export type Review = {
+  id: string;
+  productId: string;
+  /** Set only when the buyer proved the order (number + key): "verified buyer". */
+  orderNumber: string | null;
+  /** Shown publicly. */
+  name: string;
+  /** Without the @, or "". */
+  instagram: string;
+  /** 1 to 5. */
+  rating: number;
+  text: string;
+  /** Upload ids, opened at /u/<id>. */
+  photos: string[];
+  status: ReviewStatus;
+  /** The shop's public reply, "" for none. */
+  reply: string;
+  repliedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type Upload = { id: string; path: string; contentType: string };
 

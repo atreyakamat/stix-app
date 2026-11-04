@@ -167,3 +167,14 @@ describe("reviews", () => {
     expect(reviewsFor({}, "a")).toEqual([]);
   });
 });
+
+describe("app QR coupon", () => {
+  it("adds 10 free stickers and 10% off at ₹199+, nothing below", () => {
+    const code = { code: "STIXAPP", description: "", percent: 10, amountPaise: null, minOrderPaise: 19900, maxUses: null, startsAt: null, endsAt: null, source: "app-qr", appOnly: true, freeStickers: 10, active: true, createdAt: "" };
+    const ok = totals([{ type: "sticker", unitPricePaise: 25000, qty: 1 }], [], code);
+    expect(ok.totalPaise).toBe(22500);
+    expect(ok.applied.at(-1)).toMatchObject({ offerId: "coupon:STIXAPP", freeUnits: 10 });
+    const low = totals([{ type: "sticker", unitPricePaise: 15000, qty: 1 }], [], code);
+    expect(low.applied).toHaveLength(0);
+  });
+});

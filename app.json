@@ -57,6 +57,11 @@
               "scheme": "https",
               "host": "shop.stixnvibes.com",
               "pathPrefix": "/bundle"
+            },
+            {
+              "scheme": "https",
+              "host": "shop.stixnvibes.com",
+              "pathPrefix": "/app"
             }
           ]
         }

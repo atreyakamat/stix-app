@@ -231,7 +231,7 @@ function OrderView({ order, viewKey, fresh, checking, onPaid, onRefresh }: { ord
             <>
               <Row label="Subtotal" value={formatINR(order.subtotalPaise)} />
               {order.offers.map((o) => (
-                <Row key={o.offerId} label={o.name} value={`−${formatINR(o.discountPaise)}`} lemon />
+                <Row key={o.offerId} label={o.freeUnits > 0 && o.offerId.startsWith("coupon:") ? `${o.name} + ${o.freeUnits} free stickers` : o.name} value={`−${formatINR(o.discountPaise)}`} lemon />
               ))}
             </>
           ) : null}
