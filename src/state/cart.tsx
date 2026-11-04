@@ -66,7 +66,7 @@ const typeWord = (type: ProductType | null, n: number) => {
   return (n === 1 ? t.one : t.label).toLowerCase();
 };
 
-const asCoupon = (c: CartCoupon): Coupon => ({ ...c, maxUses: null, startsAt: null, source: "", active: true, createdAt: "" });
+const asCoupon = (c: CartCoupon): Coupon => ({ ...c, maxUses: null, startsAt: null, source: "", appOnly: false, active: true, createdAt: "" });
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { catalog } = useShop();

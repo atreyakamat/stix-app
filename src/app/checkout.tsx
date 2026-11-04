@@ -77,6 +77,7 @@ export default function Checkout() {
         instagram: d.instagram,
         couponCode: cart.coupon?.code ?? "",
         source: me.sourceTag,
+        fromApp: true,
       });
       const ref = parseOrderPath(r.orderPath);
       if (!ref) throw new ApiError("Order placed, but we couldn't open it. Check Instagram for our reply.", 500);

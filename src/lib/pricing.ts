@@ -203,8 +203,9 @@ export function totals(lines: PricedLine[], offers: Offer[], coupon?: Coupon | n
   if (coupon) {
     couponProblemText = couponProblem(coupon, total, uses);
     const d = couponProblemText ? 0 : couponDiscount(coupon, total);
-    if (d > 0) {
-      applied.push({ offerId: `coupon:${coupon.code}`, name: `Code ${coupon.code}`, freeUnits: 0, discountPaise: d });
+    const free = coupon.freeStickers ?? 0;
+    if (!couponProblemText && (d > 0 || free > 0)) {
+      applied.push({ offerId: `coupon:${coupon.code}`, name: `Code ${coupon.code}`, freeUnits: free, discountPaise: d });
       total -= d;
       couponCode = coupon.code;
     }
