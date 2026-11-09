@@ -199,6 +199,11 @@ export type Coupon = {
   appOnly: boolean;
   /** Free stickers added to the order (we pick the designs when packing). 0 = none. */
   freeStickers: number;
+  /** Only for a customer with no earlier order (checked by phone number). */
+  firstOrderOnly: boolean;
+  /** Orders at or above this get `bonusStickers` more free stickers. null = no bonus. */
+  bonusAbovePaise: number | null;
+  bonusStickers: number;
   active: boolean;
   createdAt: string;
 };
@@ -410,6 +415,6 @@ export type Stats = {
   topOrdered: { productId: string; qty: number }[];
   byType: { type: string; qty: number; paise: number }[];
   bySource: { source: string; visits: number | null; orders: number | null; sales: number | null; salesPaise: number | null }[];
-  byCoupon: { code: string; orders: number; sales: number; salesPaise: number; discountPaise: number }[];
+  byCoupon: { code: string; orders: number; sales: number; salesPaise: number; discountPaise: number; freeStickers: number }[];
   daily: { day: string; views: number; visits: number; orders: number; salesPaise: number }[];
 };

@@ -73,7 +73,7 @@ export type AppOrder = Omit<Order, "id" | "viewKey" | "adminNote" | "stockTaken"
   orderUrl: string;
 };
 
-export type CartCoupon = Pick<Coupon, "code" | "percent" | "amountPaise" | "minOrderPaise" | "endsAt" | "description" | "freeStickers">;
+export type CartCoupon = Pick<Coupon, "code" | "percent" | "amountPaise" | "minOrderPaise" | "endsAt" | "description" | "freeStickers" | "bonusAbovePaise" | "bonusStickers" | "firstOrderOnly">;
 
 export class ApiError extends Error {
   constructor(

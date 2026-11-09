@@ -3,8 +3,10 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ProductGrid, ProductRail, RailScroll } from "@/components/product-card";
 import { forYou } from "@/lib/personal";
+import { formatINR } from "@/lib/money";
 import { campaignBanner } from "@/lib/pricing";
 import { collectionCover, formatStallDate, isPersonalised, upcomingStalls } from "@/lib/shop-helpers";
+import { useCart } from "@/state/cart";
 import { useMe } from "@/state/me";
 import { useShop } from "@/state/shop";
 import { Icon } from "@/ui/icon";
@@ -13,7 +15,8 @@ import { colors, fonts, radius, space } from "@/ui/theme";
 
 export default function Home() {
   const { catalog, status, refreshing, refresh } = useShop();
-  const { taste } = useMe();
+  const { taste, orders } = useMe();
+  const { coupon } = useCart();
 
   if (!catalog) {
     if (status === "loading") return <Loading />;
@@ -32,6 +35,15 @@ export default function Home() {
   const recent = taste.recent.map((id) => products.find((p) => p.id === id)).filter((p) => p !== undefined).slice(0, 8);
   const stalls = upcomingStalls(catalog).slice(0, 3);
   const banner = campaignBanner(offers);
+  // The QR offer shows once the code from the QR link has been checked.
+  const perks =
+    coupon && coupon.freeStickers > 0 && !(coupon.firstOrderOnly && orders.length > 0)
+      ? [
+          coupon.percent !== null ? `${coupon.percent}% off` : `${formatINR(coupon.amountPaise ?? 0)} off`,
+          `+${coupon.freeStickers} free stickers`,
+          coupon.bonusAbovePaise && coupon.bonusStickers > 0 ? `+${coupon.bonusStickers} more over ${formatINR(coupon.bonusAbovePaise)}` : null,
+        ].filter(Boolean)
+      : null;
   const custom = products.filter(isPersonalised).length;
 
   return (
@@ -45,6 +57,19 @@ export default function Home() {
       </View>
 
       {status === "offline" ? <Note tone="mute">You're offline. Showing the shop as it was last time; prices are checked again when you order.</Note> : null}
+      {perks && coupon ? (
+        <Pressable onPress={() => router.push("/(tabs)/shop")} style={({ pressed }) => [s.unlocked, pressed && { opacity: 0.85 }]}>
+          <Txt variant="label" style={{ color: colors.ink }}>
+            Your app offer is unlocked
+          </Txt>
+          <Txt variant="title" style={{ color: colors.ink }}>
+            {perks.join(" · ")}
+          </Txt>
+          <Txt variant="small" style={{ color: colors.ink }}>
+            {coupon.minOrderPaise > 0 ? `On orders over ${formatINR(coupon.minOrderPaise)}. ` : ""}Code {coupon.code} applies by itself at checkout.
+          </Txt>
+        </Pressable>
+      ) : null}
       {banner ? <Note>{banner}</Note> : null}
       {settings.announcement ? <Note tone="mute">{settings.announcement}</Note> : null}
       {!settings.storeOpen ? <Note tone="danger">Online orders are paused right now. Message us on Instagram and we'll sort it out.</Note> : null}
@@ -152,6 +177,7 @@ const s = StyleSheet.create({
   college: { borderRadius: radius.lg, overflow: "hidden", padding: space.lg, gap: 4, minHeight: 120, justifyContent: "flex-end", borderWidth: 1, borderColor: colors.line },
   offer: { backgroundColor: colors.lemonSoft, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 7 },
   offerText: { color: colors.lemon, fontFamily: fonts.medium, fontSize: 13.5 },
+  unlocked: { backgroundColor: colors.lemon, borderRadius: radius.lg, padding: space.lg, gap: 4 },
   make: { backgroundColor: colors.lemon, borderRadius: radius.lg, padding: space.lg, flexDirection: "row", alignItems: "center", gap: space.md },
   makeTitle: { fontFamily: fonts.display, fontSize: 24, color: colors.ink, letterSpacing: -0.5 },
   makeBody: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 20, color: "rgba(7,7,7,0.75)" },

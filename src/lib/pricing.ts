@@ -184,6 +184,12 @@ export function couponProblem(c: Coupon, totalPaise: number, uses = 0, now: Date
   return null;
 }
 
+/** Free stickers a coupon gives at this order total, including the bigger-order bonus. */
+export function couponFreeStickers(c: Pick<Coupon, "freeStickers" | "bonusAbovePaise" | "bonusStickers">, totalPaise: number): number {
+  const bonus = c.bonusAbovePaise !== null && c.bonusAbovePaise !== undefined && totalPaise >= c.bonusAbovePaise ? c.bonusStickers ?? 0 : 0;
+  return (c.freeStickers ?? 0) + bonus;
+}
+
 /** The coupon's discount on what's left after offers. Never more than the total. */
 export function couponDiscount(c: Pick<Coupon, "percent" | "amountPaise">, totalPaise: number): number {
   const d = c.percent !== null ? Math.floor((totalPaise * c.percent) / 100) : (c.amountPaise ?? 0);
@@ -203,7 +209,7 @@ export function totals(lines: PricedLine[], offers: Offer[], coupon?: Coupon | n
   if (coupon) {
     couponProblemText = couponProblem(coupon, total, uses);
     const d = couponProblemText ? 0 : couponDiscount(coupon, total);
-    const free = coupon.freeStickers ?? 0;
+    const free = couponFreeStickers(coupon, total);
     if (!couponProblemText && (d > 0 || free > 0)) {
       applied.push({ offerId: `coupon:${coupon.code}`, name: `Code ${coupon.code}`, freeUnits: free, discountPaise: d });
       total -= d;
