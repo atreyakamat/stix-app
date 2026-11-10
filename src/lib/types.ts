@@ -141,7 +141,14 @@ export type OrderLine = {
 };
 
 /** freeUnits is 0 for volume pricing. */
-export type AppliedOffer = { offerId: string; name: string; freeUnits: number; discountPaise: number };
+export type AppliedOffer = {
+  offerId: string;
+  name: string;
+  freeUnits: number;
+  discountPaise: number;
+  /** Names of the free stickers the customer chose (a coupon with free stickers). The rest are our pick. */
+  picks?: string[];
+};
 
 export const FULFILMENTS = ["delivery", "pickup"] as const;
 export type Fulfilment = (typeof FULFILMENTS)[number];

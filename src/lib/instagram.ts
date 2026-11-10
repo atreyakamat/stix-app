@@ -31,7 +31,7 @@ export type MessageInput = {
   subtotalPaise: number;
   discountPaise: number;
   totalPaise: number;
-  offers: (Pick<AppliedOffer, "name" | "discountPaise"> & Partial<Pick<AppliedOffer, "offerId" | "freeUnits">>)[];
+  offers: (Pick<AppliedOffer, "name" | "discountPaise"> & Partial<Pick<AppliedOffer, "offerId" | "freeUnits" | "picks">>)[];
   customerName?: string;
   customerPhone?: string;
   fulfilment?: Fulfilment;
@@ -56,7 +56,10 @@ export function orderMessage(o: MessageInput): string {
   out.push("");
   if (o.discountPaise > 0) {
     out.push(`Subtotal: ${formatINR(o.subtotalPaise)}`);
-    for (const a of o.offers) out.push(`${a.name}: −${formatINR(a.discountPaise)}${a.offerId?.startsWith("coupon:") && (a.freeUnits ?? 0) > 0 ? ` + ${a.freeUnits} free stickers` : ""}`);
+    for (const a of o.offers) {
+      out.push(`${a.name}: −${formatINR(a.discountPaise)}${a.offerId?.startsWith("coupon:") && (a.freeUnits ?? 0) > 0 ? ` + ${a.freeUnits} free stickers` : ""}`);
+      if (a.picks?.length) out.push(`   Free stickers: ${a.picks.join(", ")}`);
+    }
   }
   out.push(`Total: ${formatINR(o.totalPaise)}`);
   const pickup = o.fulfilment === "pickup";

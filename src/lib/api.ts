@@ -124,6 +124,8 @@ export type OrderBody = {
   source: string;
   /** Lets app-only codes work. */
   fromApp: true;
+  /** Product ids of the free stickers the customer picked. */
+  freePicks: string[];
 };
 
 export const placeOrder = (body: OrderBody) => call<{ number: string; totalPaise: number; orderPath: string }>("/api/order", postJSON(body));
