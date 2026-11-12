@@ -1,5 +1,5 @@
 import { SHOP_URL } from "./config";
-import type { BlogPost, College, Collection, Coupon, CustomKind, EventType, GalleryItem, Offer, Order, Product, Settings, Stall } from "./types";
+import type { Account, AccountData, BlogPost, College, Collection, Coupon, CustomKind, EventType, GalleryItem, Offer, Order, Product, Settings, Stall } from "./types";
 
 // The shop's public API. Shapes match src/lib/app-api.ts in stixnvibes-nv;
 // bump CATALOG_VERSION there and here together.
@@ -27,6 +27,8 @@ export type Catalog = {
   gallery: GalleryItem[];
   /** Published reviews with the shop's replies. Missing on shops older than reviews. */
   reviews?: PublicReview[];
+  /** True when the shop can email sign-in codes. Hide accounts until then. */
+  accounts?: boolean;
 };
 
 /** A published customer review as the shop sends it. Photos are full URLs. */
@@ -87,12 +89,20 @@ export class ApiError extends Error {
 
 const OFFLINE = "No connection. Check your internet and try again.";
 
+// The signed-in customer's token, sent only where the shop uses it (account
+// calls and orders, which it links to the account). Not on the public catalog.
+let authToken: string | null = null;
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+};
+const wantsAuth = (path: string) => path.startsWith("/api/app/account") || path === "/api/order";
+
 async function call<T>(path: string, init?: RequestInit, timeoutMs = 15_000): Promise<T> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   let res: Response;
   try {
-    res = await fetch(`${SHOP_URL}${path}`, { ...init, signal: ctrl.signal, headers: { Accept: "application/json", ...init?.headers } });
+    res = await fetch(`${SHOP_URL}${path}`, { ...init, signal: ctrl.signal, headers: { Accept: "application/json", ...(authToken && wantsAuth(path) ? { Authorization: `Bearer ${authToken}` } : {}), ...init?.headers } });
   } catch {
     throw new ApiError(OFFLINE, 0);
   } finally {
@@ -191,6 +201,19 @@ export async function track(events: { type: EventType; productId?: string | null
     // Analytics are best effort.
   }
 }
+
+// Accounts ---------------------------------------------------------------
+
+/** Emails a 6-digit code. demoCode comes back only from preview shops, which send no mail. */
+export const requestLoginCode = (email: string) => call<{ ok: true; demoCode?: string }>("/api/app/account/code", postJSON({ email }));
+
+export type SignInResult = { token: string; expiresAt: string; account: Account; isNew: boolean };
+export const verifyLoginCode = (email: string, code: string, name: string) => call<SignInResult>("/api/app/account/verify", postJSON({ email, code, name }));
+
+export const fetchAccount = async () => (await call<{ account: Account }>("/api/app/account")).account;
+export const saveAccount = async (body: { name: string; data: AccountData }) =>
+  (await call<{ account: Account }>("/api/app/account", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).account;
+export const deleteAccount = () => call<{ ok: true }>("/api/app/account", { method: "DELETE" });
 
 export const shopLink = (path: string) => `${SHOP_URL}${path}`;
 
