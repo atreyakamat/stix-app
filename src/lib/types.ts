@@ -141,7 +141,14 @@ export type OrderLine = {
 };
 
 /** freeUnits is 0 for volume pricing. */
-export type AppliedOffer = { offerId: string; name: string; freeUnits: number; discountPaise: number };
+export type AppliedOffer = {
+  offerId: string;
+  name: string;
+  freeUnits: number;
+  discountPaise: number;
+  /** Names of the free stickers the customer chose (a coupon with free stickers). The rest are our pick. */
+  picks?: string[];
+};
 
 export const FULFILMENTS = ["delivery", "pickup"] as const;
 export type Fulfilment = (typeof FULFILMENTS)[number];
@@ -195,6 +202,15 @@ export type Coupon = {
   endsAt: string | null;
   /** Where it's handed out, e.g. "WordsUp stall". */
   source: string;
+  /** Only works when the order is placed from the Stix app. */
+  appOnly: boolean;
+  /** Free stickers added to the order (we pick the designs when packing). 0 = none. */
+  freeStickers: number;
+  /** Only for a customer with no earlier order (checked by phone number). */
+  firstOrderOnly: boolean;
+  /** Orders at or above this get `bonusStickers` more free stickers. null = no bonus. */
+  bonusAbovePaise: number | null;
+  bonusStickers: number;
   active: boolean;
   createdAt: string;
 };
@@ -406,7 +422,7 @@ export type Stats = {
   topOrdered: { productId: string; qty: number }[];
   byType: { type: string; qty: number; paise: number }[];
   bySource: { source: string; visits: number | null; orders: number | null; sales: number | null; salesPaise: number | null }[];
-  byCoupon: { code: string; orders: number; sales: number; salesPaise: number; discountPaise: number }[];
+  byCoupon: { code: string; orders: number; sales: number; salesPaise: number; discountPaise: number; freeStickers: number }[];
   daily: { day: string; views: number; visits: number; orders: number; salesPaise: number }[];
 };
 

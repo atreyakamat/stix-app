@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Switch, View } from "react-native";
 import { CartLine, CouponField, Nudges, Totals } from "@/components/cart-bits";
+import { FreePicks } from "@/components/free-picks";
 import { ApiError, parseOrderPath, placeOrder, track } from "@/lib/api";
 import { copyAndDm } from "@/lib/dm";
 import { cleanHandle, INSTAGRAM_HANDLE_RE, orderMessage } from "@/lib/instagram";
@@ -34,6 +35,7 @@ export default function Checkout() {
   const settings = catalog?.settings;
   const [d, setD] = useState<Details>(me.details);
   const [note, setNote] = useState("");
+  const [freePicks, setFreePicks] = useState<string[]>([]);
   const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -46,6 +48,11 @@ export default function Checkout() {
     counted.current = true;
     void track([{ type: "checkout", path: "/checkout", source: me.sourceTag }]);
   }, [me.sourceTag]);
+
+  // Free stickers from a code: how many, and which live stickers can be picked.
+  const freeCount = cart.applied.find((a) => a.offerId.startsWith("coupon:") && a.freeUnits > 0)?.freeUnits ?? 0;
+  const stickers = (catalog?.products ?? []).filter((p) => p.type === "sticker" && p.status === "live").slice(0, 40);
+  const picks = freePicks.slice(0, freeCount);
 
   const set = (patch: Partial<Details>) => setD((x) => ({ ...x, ...patch }));
   const setAddr = (patch: Partial<Details["address"]>) => setD((x) => ({ ...x, address: { ...x.address, ...patch } }));
@@ -77,6 +84,8 @@ export default function Checkout() {
         instagram: d.instagram,
         couponCode: cart.coupon?.code ?? "",
         source: me.sourceTag,
+        fromApp: true,
+        freePicks: picks,
       });
       const ref = parseOrderPath(r.orderPath);
       if (!ref) throw new ApiError("Order placed, but we couldn't open it. Check Instagram for our reply.", 500);
@@ -168,6 +177,7 @@ export default function Checkout() {
               <Field label="State" value={d.address.state} onChangeText={(v) => setAddr({ state: v })} maxLength={40} />
             </>
           ) : null}
+          {freeCount > 0 && stickers.length > 0 ? <FreePicks count={freeCount} stickers={stickers} picks={picks} onChange={setFreePicks} /> : null}
           <Field label="Note for us" optional value={note} onChangeText={setNote} multiline maxLength={500} placeholder="Anything we should know" />
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.md }}>
             <Txt style={{ flex: 1 }}>Remember my details on this phone</Txt>

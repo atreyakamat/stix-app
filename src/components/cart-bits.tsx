@@ -69,7 +69,7 @@ export function Totals() {
             <View key={a.offerId} style={s.row}>
               <Txt style={{ color: colors.lemon, flex: 1 }}>
                 {a.name}
-                {a.freeUnits > 0 ? <Text style={{ color: colors.mute }}> ({a.freeUnits} free)</Text> : null}
+                {a.freeUnits > 0 ? <Text style={{ color: colors.mute }}> {a.offerId.startsWith("coupon:") ? `(+${a.freeUnits} free stickers)` : `(${a.freeUnits} free)`}</Text> : null}
               </Txt>
               <Txt style={[s.num, { color: colors.lemon }]}>−{formatINR(a.discountPaise)}</Txt>
             </View>

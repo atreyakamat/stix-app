@@ -75,7 +75,7 @@ export type AppOrder = Omit<Order, "id" | "viewKey" | "adminNote" | "stockTaken"
   orderUrl: string;
 };
 
-export type CartCoupon = Pick<Coupon, "code" | "percent" | "amountPaise" | "minOrderPaise" | "endsAt" | "description">;
+export type CartCoupon = Pick<Coupon, "code" | "percent" | "amountPaise" | "minOrderPaise" | "endsAt" | "description" | "freeStickers" | "bonusAbovePaise" | "bonusStickers" | "firstOrderOnly">;
 
 export class ApiError extends Error {
   constructor(
@@ -132,6 +132,10 @@ export type OrderBody = {
   instagram: string;
   couponCode: string;
   source: string;
+  /** Lets app-only codes work. */
+  fromApp: true;
+  /** Product ids of the free stickers the customer picked. */
+  freePicks: string[];
 };
 
 export const placeOrder = (body: OrderBody) => call<{ number: string; totalPaise: number; orderPath: string }>("/api/order", postJSON(body));
@@ -143,7 +147,7 @@ export function parseOrderPath(path: string): { number: string; key: string } | 
 }
 
 export async function checkCoupon(code: string): Promise<CartCoupon> {
-  return (await call<{ coupon: CartCoupon }>(`/api/coupon?code=${encodeURIComponent(code)}`)).coupon;
+  return (await call<{ coupon: CartCoupon }>(`/api/coupon?app=1&code=${encodeURIComponent(code)}`)).coupon;
 }
 
 /** Sends a photo from the phone. Returns the upload id the order keeps. */
